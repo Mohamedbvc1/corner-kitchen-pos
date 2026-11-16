@@ -7,7 +7,7 @@ run the kitchen board, and manage the menu, inventory and staff.
 
 ## Team
 - Mohamed Bouhadrah
-- Abdel Bouhadrah
+- Abdel 
 
 ## Who does what
 We split the work half and half and may swap issues as we go.
