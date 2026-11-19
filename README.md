@@ -29,3 +29,6 @@ Node.js, Express, MongoDB (Mongoose), HTML, CSS, JavaScript
 
 ## Documents
 Screen designs and the project plan are in the `docs` folder.
+
+**AI assistance**
+Screen designs and planning documents were made with help from Claude (AI), then reviewed and edited by the team.
