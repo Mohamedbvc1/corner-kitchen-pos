@@ -1,0 +1,57 @@
+body {
+        font-family: Arial, sans-serif;
+        background-color: #f2f2f2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 10px;
+    }
+
+    /* The white card that holds the form */
+    form {
+        background-color: white;
+        width: 360px;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Each label sits above its box */
+    label {
+        margin-top: 12px;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    /* Bigger boxes, easy to click */
+    input,
+    select {
+        padding: 12px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+    }
+
+    /* Space above the confirm password box */
+    input[name="confirmPassword"] {
+        margin-top: 10px;
+    }
+
+    /* The Register button */
+    button {
+        margin-top: 20px;
+        padding: 14px;
+        font-size: 16px;
+        background-color: #e67e22;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    /* Button a little darker when the mouse is on it */
+    button:hover {
+        background-color: #cf6d17;
+    }
