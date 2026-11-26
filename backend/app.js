@@ -17,7 +17,7 @@ import { MongoClient } from "mongodb";
 import express from "express";
 import path from "path";
 import crypto from "crypto";
-import fs from "fs";
+
 // import jsonwebtoken from "jsonwebtoken"; // check import name -> We will use this next class.
 
 // The mail truck that delivers our emails through Gmail
