@@ -156,93 +156,78 @@ app.get("/admin", (req, res) => {
 
 
 
-
-
 app.post("/register", async (req, res) => {
 
-    //Take the username, password and role from the form create a new user form
+    // 1. Take the values from the form
     const username = req.body.username;
-    const password = req.body.password;
-    const role = req.body.role;
     const email = req.body.email;
+    const password = req.body.password;
+    const confirmPassword = req.body.confirmPassword;
+    const role = req.body.role;
 
-    
-    // read the second password
-    let confirmPassword = req.body.confirmPassword;
-
-    // if they are not the same, stop here
+    // 2. If the two passwords are not the same, stop here
     if (password !== confirmPassword) {
         res.send("Passwords do not match");
         return;
     }
 
+    try {
+        // 3. Get the "users" collection from our database
+        const usersCollection = db.collection("users");
 
+        // 4. Check if this username is already taken
+        const existingUser = await usersCollection.findOne({ username: username });
 
-    //Read users.json into the list
-    const users = JSON.parse(fs.readFileSync("users.json", "utf-8"));
-    
+        if (existingUser) {
+            res.status(409);
+            res.json({ message: "User name is already used" });
+            return;
+        }
 
-    //Check if this username is already taken
+        // 5. Make a new salt and hash the password with it
+        const newSalt = generateSalt(16);
+        const hashedPassword = hashPassword(password, newSalt);
 
-    const user = users.find(x => x.username == username);
-    
-    //3  Username already taken
-    if (user) {
-        res.status(409);               // set the code: Conflict 
-        res.json({ message: "User name is already used" });   // write the reply
-        return;                                                // stop the function here
+        // 6. Build the new user
+        const newUser = {
+            username: username,
+            email: email,
+            hashedPassword: hashedPassword,
+            salt: newSalt,
+            role: role
+        };
+
+        // 7. Save the new user in MongoDB
+        await usersCollection.insertOne(newUser);
+
+        // 8. Send the confirmation email to the class inbox
+        // try {
+        //     await transporter.sendMail({
+        //         from: process.env.REGISTRATION_NOTIFY_EMAIL,
+        //         to: "this.is.a.test.email.for.our.class@gmail.com",
+        //         subject: "New user registration",
+        //         text: `A new account was registered.\n\nEmail: ${email}\nRole: ${role}\n`
+        //     });
+        //     console.log("Email sent");
+        // }
+        // catch (error) {
+        //     console.log("Email failed:", error.message);
+        // }
+
+        // 9. Reply to the browser
+        res.json({ message: "User Created" });
+    }
+    catch (error) {
+        // If anything with the database goes wrong, show it in the terminal
+        console.log("Register failed:", error);
+        res.status(500);
+        res.json({ message: "Something went wrong, please try again" });
     }
 
+});
 
 
-    
-    //4 Make the new salt and hash the password with it
 
-    const newSalt = generateSalt(16);
-    const hashedPassword = hashPassword(password, newSalt)
-
-
-    // Add the new usre to the list
-    const newUser = {
-        username: username,
-        email: email,
-        hashedPassword: hashedPassword,
-        salt: newSalt,
-        role: role
-    }
-
-
-    users.push(newUser);
-
-  
-// 6. Save the list back to users and reply
-
-const usersText = JSON.stringify(users, null, 4);
-
-fs.writeFileSync("users.json", usersText);
-
-
-// 7. Send the confirmation email to the class inbox
-try {
-    await transporter.sendMail({
-        from: process.env.REGISTRATION_NOTIFY_EMAIL,
-        to: "this.is.a.test.email.for.our.class@gmail.com",
-        subject: "New user registration",
-        text: `A new account was registered.\n\nEmail: ${email}\nRole: ${role}\n`
-    });
-
-    // Show a message in the terminal so we know it worked
-    console.log("Email sent");
-}
-catch (error) {
-    // If the email fails, show why in the terminal
-    console.log("Email failed:", error.message);
-}
-
-
-res.json({message : "User Created"});
-
-  });
 
 
 
