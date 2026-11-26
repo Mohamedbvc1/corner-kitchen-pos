@@ -5,10 +5,15 @@
 // If using import, remember to set up ES Modules (Add "type": "module" to package.json)
 
 // Load the secret values from the .env file
+
+import dns from "dns";
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
+
 import "dotenv/config";
 
 // Bring in nodemailer, which sends emails
 import nodemailer from "nodemailer";
+import mongoose from "mongoose";
 import express from "express";
 import path from "path";
 import crypto from "crypto";
@@ -24,6 +29,16 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+
+
+// Connect to MongoDB using the address in .env
+mongoose.connect(process.env.MONGODB_URI)
+  .then(function () {
+    console.log("Connected to MongoDB");
+  })
+  .catch(function (error) {
+    console.log("MongoDB connection failed:", error);
+  });
 
 
 const app = express();
