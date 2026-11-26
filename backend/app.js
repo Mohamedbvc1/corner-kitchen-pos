@@ -13,7 +13,7 @@ import "dotenv/config";
 
 // Bring in nodemailer, which sends emails
 import nodemailer from "nodemailer";
-import mongoose from "mongoose";
+import { MongoClient } from "mongodb";
 import express from "express";
 import path from "path";
 import crypto from "crypto";
@@ -31,14 +31,32 @@ const transporter = nodemailer.createTransport({
 
 
 
-// Connect to MongoDB using the address in .env
-mongoose.connect(process.env.MONGODB_URI)
-  .then(function () {
+
+// Make the client, using the address in .env
+const client = new MongoClient(process.env.MONGODB_URI);
+
+// This will hold our database after we connect
+let db;
+
+// Connect once, when the server starts
+async function connectToDatabase() {
+  try {
+    // Try to connect to the cluster
+    await client.connect();
+
+    // Pick our database
+    db = client.db("cornerKitchen");
+
     console.log("Connected to MongoDB");
-  })
-  .catch(function (error) {
+  } catch (error) {
     console.log("MongoDB connection failed:", error);
-  });
+  }
+}
+
+// Run it
+connectToDatabase();
+
+
 
 
 const app = express();
