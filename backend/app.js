@@ -156,6 +156,9 @@ app.get("/admin", (req, res) => {
 
 
 
+
+
+
 app.post("/register", async (req, res) => {
 
     // 1. Take the values from the form
@@ -238,39 +241,44 @@ const salt = crypto.randomBytes(16).toString("hex"); // we used this to generate
 // This next function will still be used for our user passwords. We will need to hash every time we create a new user password:
 // const randomlyGeneratedKey = crypto.pbkdf2(password, salt, 10, 64, 'sha512') //getHashes returns an array of possible digests
 
+async function checkCredentials(req, res, next) {
 
-function checkCredentials(req, res, next) {
     // 1. Take the username and password from the letter (req.body)
-    const { username, password } = req.body;
-    //const username = req.body.username;
-    //const password = req.body.password;
+    const username = req.body.username;
+    const password = req.body.password;
 
-    // 2. Read users.json and find the user
-    const users = JSON.parse(fs.readFileSync("users.json", "utf-8"));
-    const user = users.find(x => x.username == username);
+    try {
+        // 2. Find the user in MongoDB
+        const user = await db.collection("users").findOne({ username: username });
 
-    // 3. Nobody with that name? Send the letter back.
-    //if (!user) return res.status(401).json({ message: "Wrong username or password" });
+        // 3. Nobody with that name?
+        if (!user) {
+            res.status(401);                                       // set the code: not allowed
+            res.json({ message: "Wrong username or password" });   // write the reply
+            return;                                                // stop the function here
+        }
 
+        // 4. Hash the typed password with the saved salt and compare
+        const newHashedPassword = hashPassword(password, user.salt);
 
-    // 3. Nobody with that name?
-    if (!user) {
-        res.status(401);                                       // set the code: not allowed
-        res.json({ message: "Wrong username or password" });   // write the reply
-        return;                                                // stop the function here
+        if (newHashedPassword != user.hashedPassword) {
+            res.status(401);
+            res.json({ message: "Wrong username or password" });
+            return;
+        }
+
+        // 5. All good: hand the user to the manager
+        req.user = user;
+        next();
     }
-
-
-    // 4. Hash the typed password with the saved salt and compare
-    const newHashedPassword = hashPassword(password, user.salt);
-    if (newHashedPassword != user.hashedPassword) {
-        return res.status(401).json({ message: "Wrong username or password" });
+    catch (error) {
+        // If the database has a problem, show it in the terminal
+        console.log("Login check failed:", error);
+        res.status(500);
+        res.json({ message: "Something went wrong, please try again" });
     }
-
-    // 5. All good: hand the user to the manager
-    req.user = user;
-    next();
 }
+
 
 /* * * * * * * * * * * * * * * * * * 
  * Our helper functions (services) *
